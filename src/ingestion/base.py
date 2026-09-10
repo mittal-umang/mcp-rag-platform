@@ -12,7 +12,7 @@ from typing import Protocol, runtime_checkable
 
 from src.common.enums import SourceName
 
-__all__ = ["SourceDocument", "Source", "SourceName"]
+__all__ = ["Source", "SourceDocument", "SourceName"]
 
 
 @dataclass(frozen=True, slots=True)

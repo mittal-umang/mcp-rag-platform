@@ -11,10 +11,10 @@ from src.ingestion.pipeline import IngestionPipeline, IngestionReport
 from src.ingestion.registry import get_source
 
 __all__ = [
+    "IngestionPipeline",
+    "IngestionReport",
     "Source",
     "SourceDocument",
     "SourceName",
-    "IngestionPipeline",
-    "IngestionReport",
     "get_source",
 ]
