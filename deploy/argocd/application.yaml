@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/mittal-umang/new-mcp.git
+    repoURL: https://github.com/mittal-umang/mcp-rag-platform.git
     targetRevision: main
     path: deploy/helm
   destination:
