@@ -11,21 +11,21 @@ point.
 
 ```
                       ┌─────────────────────────────────────────────┐
-   Claude Desktop ───▶│  MCP server  (retrieve / fetch_source /      │
-   (MCP host)         │              ingest)                         │
+   Claude Desktop ───▶│  MCP server  (retrieve / fetch_source /     │
+   (MCP host)         │              ingest)                        │
                       └───────────────┬─────────────────────────────┘
                                       │
                       ┌───────────────▼─────────────────────────────┐
-   HTTP  ────────────▶│  Agent (FastAPI + Pydantic)                  │
-   /query             │   embed → retrieve → ground → generate       │
-                      │   weak-retrieval guardrail                   │
+   HTTP  ────────────▶│  Agent (FastAPI + Pydantic)                 │
+   /query             │   embed → retrieve → ground → generate      │
+                      │   weak-retrieval guardrail                  │
                       └───────┬───────────────────────┬─────────────┘
                               │                       │
                      ┌────────▼─────────┐    ┌────────▼──────────────┐
                      │ Qdrant (vectors) │    │ LLM provider          │
                      └──────────────────┘    │  anthropic | openai   │
                                              │  | vllm (Phase 2)     │
-                     embeddings: local        └───────────────────────┘
+                     embeddings: local       └───────────────────────┘
                      (sentence-transformers)
 ```
 
