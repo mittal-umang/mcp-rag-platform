@@ -23,6 +23,13 @@ qdrant:
   port: 6333
   storage: 5Gi
 
+# Data ingestion. The one-shot Job runs on install/upgrade; the CronJob re-indexes
+# on a schedule (incremental - only pages whose Wikipedia revision changed).
+ingestion:
+  runOnInstall: true          # render the post-install/upgrade Job
+  full: false                 # true => ignore saved revisions and re-index everything
+  schedule: "0 3 * * 0"       # weekly re-index (Sun 03:00 UTC); "" disables the CronJob
+
 # Phase 2: self-hosted inference. Off by default (needs a GPU node).
 vllm:
   enabled: false

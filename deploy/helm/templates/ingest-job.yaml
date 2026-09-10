@@ -1,0 +1,35 @@
+{{- if .Values.ingestion.runOnInstall }}
+# One-shot ingestion after the app is deployed. Populates the vector store so the
+# agent has something to retrieve on first use.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ingest
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels: { app: ingest }
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ingest
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - python
+            - -m
+            - src.ingestion
+            {{- if .Values.ingestion.full }}
+            - --full
+            {{- end }}
+          envFrom:
+            - secretRef: { name: {{ .Values.secretName }} }
+          env:
+            - name: QDRANT_URL
+              value: "{{ .Values.agent.env.QDRANT_URL }}"
+{{- end }}

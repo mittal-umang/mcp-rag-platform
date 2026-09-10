@@ -1,0 +1,27 @@
+{
+  "batchcomplete": true,
+  "query": {
+    "pages": [
+      {
+        "pageid": 5843419,
+        "ns": 0,
+        "title": "France",
+        "extract": "France, officially the French Republic, is a country located primarily in Western Europe. Its capital is Paris.",
+        "revisions": [{ "revid": 1234567890 }]
+      },
+      {
+        "pageid": 15573,
+        "ns": 0,
+        "title": "Japan",
+        "extract": "Japan is an island country in East Asia. Its capital and largest city is Tokyo.",
+        "revisions": [{ "revid": 987654321 }]
+      },
+      {
+        "pageid": 99999999,
+        "ns": 0,
+        "title": "Nonexistent Place",
+        "missing": true
+      }
+    ]
+  }
+}
