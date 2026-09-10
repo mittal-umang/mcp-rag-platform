@@ -1,0 +1,31 @@
+{{- if .Values.ingestion.schedule }}
+# Scheduled incremental re-index. Only pages whose Wikipedia revision changed are
+# re-embedded; concurrencyPolicy Forbid avoids overlapping runs.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ingest-reindex
+spec:
+  schedule: "{{ .Values.ingestion.schedule }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels: { app: ingest-reindex }
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["python", "-m", "src.ingestion"]
+              envFrom:
+                - secretRef: { name: {{ .Values.secretName }} }
+              env:
+                - name: QDRANT_URL
+                  value: "{{ .Values.agent.env.QDRANT_URL }}"
+{{- end }}
