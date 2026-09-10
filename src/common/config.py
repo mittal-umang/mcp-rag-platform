@@ -3,12 +3,14 @@ from __future__ import annotations
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from src.common.enums import LLMProviderName
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # generation
-    llm_provider: str = "anthropic"          # anthropic | openai | vllm
+    llm_provider: LLMProviderName = LLMProviderName.ANTHROPIC
     llm_model: str = "claude-3-5-sonnet-latest"
     anthropic_api_key: str = ""
     openai_api_key: str = ""

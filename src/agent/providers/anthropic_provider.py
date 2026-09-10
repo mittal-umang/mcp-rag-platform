@@ -1,12 +1,12 @@
 """Anthropic Messages API backend."""
 from __future__ import annotations
 
-from src.agent.providers.base import Completion
+from src.agent.providers.base import Completion, LLMProviderName
 from src.common.config import settings
 
 
 class AnthropicProvider:
-    name = "anthropic"
+    name = LLMProviderName.ANTHROPIC
 
     def __init__(self) -> None:
         import anthropic

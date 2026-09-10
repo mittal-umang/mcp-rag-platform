@@ -1,25 +1,25 @@
 """Phase 2: self-hosted inference via vLLM's OpenAI-compatible server.
 
 vLLM exposes an OpenAI-compatible /v1 API, so this reuses the OpenAI client
-pointed at the in-cluster vLLM service. Enable with LLM_PROVIDER=vllm and
-vllm.enabled=true in the Helm values (needs a GPU node).
+pointed at the in-cluster vLLM service. Enable with ``LLM_PROVIDER=vllm`` and
+``vllm.enabled=true`` in the Helm values (needs a GPU node).
 
-Continuous batching and paged-attention are handled server-side by vLLM; this
+Continuous batching and paged attention are handled server-side by vLLM; this
 client stays thin. Streaming can be layered on later for time-to-first-token.
 """
 from __future__ import annotations
 
-from src.agent.providers.base import Completion
+from src.agent.providers.base import Completion, LLMProviderName
 from src.common.config import settings
 
 
 class VLLMProvider:
-    name = "vllm"
+    name = LLMProviderName.VLLM
 
     def __init__(self) -> None:
         from openai import OpenAI
 
-        # vLLM ignores the key but the client requires one
+        # vLLM ignores the key, but the client requires one to be set.
         self._client = OpenAI(base_url=settings.vllm_base_url, api_key="not-needed")
         self._model = settings.vllm_model
 

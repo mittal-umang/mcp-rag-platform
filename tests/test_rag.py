@@ -2,6 +2,7 @@
 
 Shows the weak-retrieval guardrail refuses instead of calling the LLM.
 """
+from src.agent.providers.base import Completion, LLMProviderName
 from src.agent.rag import REFUSAL, RagPipeline
 from src.common.models import ScoredChunk
 
@@ -15,13 +16,12 @@ class FakeStore:
 
 
 class FakeProvider:
-    name = "fake"
+    name = LLMProviderName.ANTHROPIC
     called = False
 
     def generate(self, system, prompt):
         FakeProvider.called = True
-        from src.agent.providers.base import Completion
-        return Completion(text="grounded answer [d1]", completion_tokens=3, provider="fake")
+        return Completion(text="grounded answer [d1]", completion_tokens=3, provider=self.name)
 
 
 def _pipeline(chunks, monkeypatch):

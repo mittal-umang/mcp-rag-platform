@@ -55,7 +55,7 @@ class RagPipeline:
         t1 = time.perf_counter()
         completion = self.provider.generate(SYSTEM, prompt)
         GENERATION_LATENCY.observe(time.perf_counter() - t1)
-        GENERATION_TOKENS.labels(provider=completion.provider).inc(completion.completion_tokens)
+        GENERATION_TOKENS.labels(provider=completion.provider.value).inc(completion.completion_tokens)
         QUERIES.labels(grounded="true").inc()
 
         citations = [
