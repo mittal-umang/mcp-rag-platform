@@ -1,0 +1,37 @@
+image:
+  repository: mcp-rag-platform
+  tag: dev
+  pullPolicy: IfNotPresent
+
+agent:
+  replicas: 2
+  port: 8000
+  env:
+    LLM_PROVIDER: anthropic
+    LLM_MODEL: claude-3-5-sonnet-latest
+    QDRANT_URL: http://qdrant:6333
+    MIN_SCORE: "0.30"
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "1", memory: "1Gi" }
+
+mcpServer:
+  replicas: 1
+
+qdrant:
+  image: qdrant/qdrant:v1.9.0
+  port: 6333
+  storage: 5Gi
+
+# Phase 2: self-hosted inference. Off by default (needs a GPU node).
+vllm:
+  enabled: false
+  image: vllm/vllm-openai:latest
+  model: Qwen/Qwen2.5-3B-Instruct
+  port: 8000
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+
+# provider API keys are injected from a Secret, not committed here
+secretName: mcp-rag-secrets
