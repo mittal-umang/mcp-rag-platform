@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  labels: { app: qdrant }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: qdrant }
+  template:
+    metadata:
+      labels: { app: qdrant }
+    spec:
+      containers:
+        - name: qdrant
+          image: {{ .Values.qdrant.image }}
+          ports:
+            - containerPort: {{ .Values.qdrant.port }}
+          volumeMounts:
+            - name: storage
+              mountPath: /qdrant/storage
+      volumes:
+        - name: storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  labels: { app: qdrant }
+spec:
+  selector: { app: qdrant }
+  ports:
+    - port: {{ .Values.qdrant.port }}
+      targetPort: {{ .Values.qdrant.port }}

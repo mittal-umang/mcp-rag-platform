@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mcp-rag-platform
+description: RAG agent + MCP server + Qdrant, with optional self-hosted vLLM inference.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

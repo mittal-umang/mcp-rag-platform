@@ -1,0 +1,12 @@
+# Document set the RAG agent answers over: cloud-native / MLOps docs.
+# Swap or extend freely - the pipeline is domain-agnostic.
+# Local paths are indexed as-is; https URLs are fetched at index time.
+sources:
+  - uri: data/docs/kubernetes_rollouts.md
+    tags: [kubernetes, deployments]
+  - uri: data/docs/argocd_sync_and_rollback.md
+    tags: [argocd, gitops]
+  - uri: data/docs/terraform_state.md
+    tags: [terraform, iac]
+  - uri: data/docs/helm_charts.md
+    tags: [helm, packaging]

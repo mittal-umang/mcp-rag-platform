@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  labels: { app: agent }
+spec:
+  replicas: {{ .Values.agent.replicas }}
+  selector:
+    matchLabels: { app: agent }
+  template:
+    metadata:
+      labels: { app: agent }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{ .Values.agent.port }}"
+    spec:
+      containers:
+        - name: agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["uvicorn", "src.agent.main:app", "--host", "0.0.0.0", "--port", "{{ .Values.agent.port }}"]
+          ports:
+            - containerPort: {{ .Values.agent.port }}
+          envFrom:
+            - secretRef: { name: {{ .Values.secretName }} }
+          env:
+            {{- range $k, $v := .Values.agent.env }}
+            - name: {{ $k }}
+              value: "{{ $v }}"
+            {{- end }}
+          readinessProbe:
+            httpGet: { path: /readyz, port: {{ .Values.agent.port }} }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: {{ .Values.agent.port }} }
+            initialDelaySeconds: 10
+          resources: {{- toYaml .Values.agent.resources | nindent 12 }}
