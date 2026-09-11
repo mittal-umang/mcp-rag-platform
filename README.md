@@ -80,6 +80,35 @@ Helm runs ingestion as a post-install/upgrade `Job` and schedules incremental re
 The MCP `ingest` tool is the ad-hoc path (drop in a single doc); the pipeline above is the
 bulk, repeatable path.
 
+### Register with an MCP host
+
+Point the server's venv interpreter directly at the module - no wrapper script needed.
+
+```bash
+# Claude Code (this repo's .mcp.json, shared with anyone who clones it)
+claude mcp add mcp-rag-platform --scope project -- \
+  /path/to/mcp-rag-platform/venv/bin/python -m src.mcp_server.server
+```
+
+For Claude Desktop, add the equivalent entry to `claude_desktop_config.json`'s
+`mcpServers` (find it via Settings → Developer):
+
+```json
+{
+  "mcpServers": {
+    "mcp-rag-platform": {
+      "command": "/path/to/mcp-rag-platform/venv/bin/python",
+      "args": ["-m", "src.mcp_server.server"],
+      "cwd": "/path/to/mcp-rag-platform"
+    }
+  }
+}
+```
+
+`cwd` matters: config is loaded from a relative `.env`, so the process needs the repo root
+as its working directory regardless of where the host launches it from. Qdrant must already
+be running (`make up`) before the host connects, since `ingest`/`retrieve` hit it directly.
+
 ## Observability
 
 `GET /metrics` exposes Prometheus counters/histograms (request count, retrieval latency,
@@ -96,7 +125,7 @@ remain the zero-GPU default.
 ## Layout
 
 ```
-src/agent        FastAPI app, RAG pipeline, pluggable LLM providers
+src/agent         FastAPI app, RAG pipeline, pluggable LLM providers
 src/mcp_server    MCP tools (retrieve, fetch_source, ingest)
 src/ingestion     source connectors, async fetch, incremental pipeline, CLI
 src/indexing      chunking, local embeddings, qdrant store
