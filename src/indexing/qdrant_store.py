@@ -45,9 +45,9 @@ class VectorStore:
         return len(points)
 
     def search(self, vector: list[float], k: int) -> list[ScoredChunk]:
-        hits = self.client.search(
-            collection_name=self.collection, query_vector=vector, limit=k,
-        )
+        hits = self.client.query_points(
+            collection_name=self.collection, query=vector, limit=k,
+        ).points
         return [
             ScoredChunk(
                 doc_id=h.payload["doc_id"],
