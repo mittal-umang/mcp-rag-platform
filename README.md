@@ -18,9 +18,9 @@ point.
                      chunk → embed → upsert          │ retrieve
                      (incremental by revision)       │
                                                      │
-                      ┌──────────────────────────────┴──────────────┐
+                      ┌──────────────────────────────┴────────────────┐
    Claude Desktop ───▶│  MCP server (retrieve / fetch_source / ingest)│
-   (MCP host)         └───────────────┬──────────────────────────────┘
+   (MCP host)         └───────────────┬───────────────────────────────┘
                                       │
    HTTP /query ──────────────────────▶  Agent (FastAPI + Pydantic)
                                         embed → retrieve → ground → generate
