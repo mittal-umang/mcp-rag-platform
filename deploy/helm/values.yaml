@@ -21,7 +21,7 @@ mcpServer:
   replicas: 1
 
 qdrant:
-  image: qdrant/qdrant:v1.9.0
+  image: qdrant/qdrant:v1.15.4
   port: 6333
   storage: 5Gi
 
