@@ -63,7 +63,7 @@ class _FakeStore:
     def delete_doc(self, doc_id):
         pass
 
-    def upsert(self, doc_id, vectors, payloads):
+    def upsert(self, doc_id, vectors, payloads, sparse_vectors=None):
         self.upserts += 1
         return len(vectors)
 
@@ -76,8 +76,9 @@ def _doc(doc_id, revision):
 
 
 def test_pipeline_incremental_skips_unchanged(tmp_path, monkeypatch):
-    # keep the pipeline hermetic: fake out embedding + dimension
-    monkeypatch.setattr("src.ingestion.pipeline.embed_texts", lambda texts: [[0.0] for _ in texts])
+    # keep the pipeline hermetic: fake out embedding (now done in the shared writer)
+    monkeypatch.setattr("src.indexing.writer.embed_texts", lambda texts: [[0.0] for _ in texts])
+    monkeypatch.setattr("src.indexing.writer.embed_texts_sparse", lambda texts: [None for _ in texts])
     monkeypatch.setattr("src.ingestion.pipeline.embedding_dim", lambda: 1)
     from src.ingestion.pipeline import IngestionPipeline
 

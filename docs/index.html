@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mcp-rag-platform</title>
+<meta name="description" content="An MCP server + RAG agent with hybrid retrieval, a real ingestion pipeline, and a Kubernetes serving platform.">
+<style>
+  :root{
+    --bg:#f7f7f9; --panel:#ffffff; --ink:#16181d; --muted:#5b6270;
+    --line:#e6e8ee; --accent:#5b5bd6; --accent-ink:#ffffff;
+    --code-bg:#0f1220; --code-ink:#e7e9f3; --pill:#eef0fb; --pill-ink:#4b4bc4;
+    --ok:#0f9d6b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d0f14; --panel:#151821; --ink:#e9ebf1; --muted:#9aa2b1;
+      --line:#242835; --accent:#8b8bf0; --accent-ink:#0d0f14;
+      --code-bg:#0a0c14; --code-ink:#dfe3f2; --pill:#1b2030; --pill-ink:#a9b0ff;
+      --ok:#3dd4a0;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  header.hero{padding:72px 0 40px;border-bottom:1px solid var(--line)}
+  .eyebrow{color:var(--muted);font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
+  h1{margin:0;font-size:clamp(30px,6vw,46px);letter-spacing:-.02em}
+  .tag{margin:14px 0 0;font-size:clamp(17px,2.6vw,20px);color:var(--muted);max-width:640px}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+  .btn{display:inline-block;padding:11px 18px;border-radius:10px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{text-decoration:none;filter:brightness(1.05)}
+  .btn.ghost{border:1px solid var(--line);color:var(--ink);background:var(--panel)}
+  .btn.ghost:hover{text-decoration:none;border-color:var(--accent)}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+  .pill{background:var(--pill);color:var(--pill-ink);font-size:12.5px;font-weight:600;
+    padding:5px 11px;border-radius:999px}
+
+  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;letter-spacing:-.01em;margin:0 0 18px}
+  p.lead{color:var(--muted);margin-top:0;max-width:680px}
+
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 2px}
+  .node{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:10px 13px;font-size:13.5px;font-weight:600}
+  .node small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .arrow{color:var(--muted);font-size:18px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h3{margin:0 0 6px;font-size:16px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .card .k{color:var(--accent);font-weight:600}
+
+  pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:12px;
+    overflow-x:auto;font-size:13.5px;line-height:1.55}
+  .demo{background:var(--panel);border:1px dashed var(--line);border-radius:14px;
+    padding:14px;text-align:center}
+  .demo img{max-width:100%;border-radius:10px;display:block;margin:0 auto}
+  .demo .ph{color:var(--muted);font-size:14px;padding:38px 12px}
+  .demo .ph code{background:var(--pill);color:var(--pill-ink);padding:2px 6px;border-radius:6px}
+
+  footer{padding:34px 0 60px;color:var(--muted);font-size:14px}
+  .note{color:var(--muted);font-size:13.5px;margin-top:10px}
+  ul.tools{list-style:none;padding:0;margin:0}
+  ul.tools li{padding:8px 0;border-top:1px solid var(--line)}
+  ul.tools li:first-child{border-top:0}
+  ul.tools code{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Personal project &middot; not affiliated with any employer</p>
+    <h1>mcp-rag-platform</h1>
+    <p class="tag">An <strong>MCP server</strong> + <strong>RAG agent</strong> with hybrid
+      retrieval, a real ingestion pipeline, and the Kubernetes serving platform that makes it
+      operable. The agent is the payload; the platform around it is the point.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/mittal-umang/mcp-rag-platform">View on GitHub</a>
+      <a class="btn ghost" href="#quickstart">Quickstart</a>
+    </div>
+    <div class="pills">
+      <span class="pill">MCP</span><span class="pill">RAG</span>
+      <span class="pill">Hybrid search</span><span class="pill">Qdrant</span>
+      <span class="pill">FastAPI</span><span class="pill">Kubernetes</span>
+      <span class="pill">Helm + ArgoCD</span><span class="pill">Prometheus</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Architecture</h2>
+    <p class="lead">A source-based pipeline builds the corpus; the agent retrieves and grounds
+      answers; the MCP server exposes tools to a host like Claude Desktop. Everything runs
+      containerized on Kubernetes with GitOps and metrics.</p>
+    <div class="flow">
+      <div class="node">MediaWiki API<small>source</small></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node">Ingestion pipeline<small>fetch &middot; chunk &middot; embed</small></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node">Qdrant<small>dense + sparse</small></div>
+    </div>
+    <div class="flow">
+      <div class="node">Claude Desktop<small>MCP host</small></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node">MCP server<small>retrieve &middot; fetch_source &middot; ingest</small></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node">RAG agent<small>retrieve &rarr; ground &rarr; generate</small></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node">LLM provider<small>anthropic / openai / vllm</small></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What's inside</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Hybrid retrieval</h3>
+        <p><span class="k">Dense + BM25 sparse</span>, fused server-side with Reciprocal Rank
+          Fusion via Qdrant's Query API. Optional cross-encoder reranker for higher precision.</p>
+      </div>
+      <div class="card">
+        <h3>Grounded answers, with a guardrail</h3>
+        <p>Answers cite their sources. When the strongest match is below threshold, the agent
+          <span class="k">refuses instead of hallucinating</span>.</p>
+      </div>
+      <div class="card">
+        <h3>Data ingestion pipeline</h3>
+        <p>Async batched fetch over the MediaWiki API with <span class="k">incremental
+          re-index</span> — a page is re-embedded only when its revision changes.</p>
+      </div>
+      <div class="card">
+        <h3>MCP server</h3>
+        <p>Three tools — <span class="k">retrieve</span>, <span class="k">fetch_source</span>,
+          <span class="k">ingest</span> — over stdio for any MCP host.</p>
+      </div>
+      <div class="card">
+        <h3>Serving platform</h3>
+        <p>Docker, a Helm chart, ArgoCD (GitOps) on a kind cluster, Prometheus
+          <span class="k">/metrics</span> and structured logs.</p>
+      </div>
+      <div class="card">
+        <h3>Pluggable + right-sized</h3>
+        <p>Providers and sources selected by enum + registry. vLLM self-hosting wired for a
+          Phase&nbsp;2; ingestion is a batch job, not Spark, on purpose.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Demo</h2>
+    <p class="lead">Asking a grounded question, and the guardrail refusing an out-of-corpus one.</p>
+    <div class="demo">
+      <img src="demo.gif" alt="mcp-rag-platform demo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div class="ph" style="display:none">
+        Add a recording at <code>docs/demo.gif</code> and it renders here.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <h2>Quickstart</h2>
+    <pre>cp .env.example .env          # add your provider API key
+make up                       # docker compose: agent + qdrant
+python -m src.ingestion       # build the corpus (Wikipedia, incremental)
+make ask Q="what is the capital of Japan?"</pre>
+    <p class="note">Retrieval defaults to hybrid. Deploy to a local cluster with
+      <code>make kind-up &amp;&amp; make deploy &amp;&amp; make argocd</code>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>MCP tools</h2>
+    <ul class="tools">
+      <li><code>retrieve(query, k)</code> — ranked chunks (dense or hybrid) with source citations</li>
+      <li><code>fetch_source(doc_id, section?)</code> — the full document behind a chunk</li>
+      <li><code>ingest(source_uri | text, metadata)</code> — add or re-index one document, idempotent per doc_id</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Built by <a href="https://github.com/mittal-umang">Umang Mittal</a> as a personal project.
+    &middot; <a href="https://github.com/mittal-umang/mcp-rag-platform">Source</a>
+    &middot; <a href="https://www.linkedin.com/in/mittal-umang">LinkedIn</a>
+  </div>
+</footer>
+
+</body>
+</html>
