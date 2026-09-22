@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.common.enums import LLMProviderName, SourceName
+from src.common.enums import LLMProviderName, RetrievalMode, SourceName
 
 
 class Settings(BaseSettings):
@@ -25,9 +25,17 @@ class Settings(BaseSettings):
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embed_batch_size: int = 64
 
-    # retrieval guardrail
-    min_score: float = 0.30
+    # retrieval
+    retrieval_mode: RetrievalMode = RetrievalMode.HYBRID
     top_k: int = 5
+    hybrid_prefetch: int = 50          # candidates each arm fetches before fusion
+    sparse_model: str = "Qdrant/bm25"  # fastembed sparse model (stateless BM25)
+    min_score: float = 0.30            # guardrail: min dense cosine of the best match
+
+    # reranking (optional cross-encoder stage on top of retrieval)
+    rerank_enabled: bool = False
+    reranker_model: str = "BAAI/bge-reranker-base"
+    rerank_top_n: int = 30             # candidates fetched and fed to the reranker
 
     # ingestion
     ingestion_source: SourceName = SourceName.WIKIPEDIA

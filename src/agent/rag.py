@@ -1,9 +1,14 @@
-"""The RAG pipeline: retrieve -> ground -> generate, with a weak-retrieval guardrail."""
+"""The RAG pipeline: retrieve -> ground -> generate, with a weak-retrieval guardrail.
+
+Retrieval strategy (dense / hybrid / rerank) lives in the Retriever; this module owns
+prompt assembly, the guardrail, and generation.
+"""
 from __future__ import annotations
 
 import time
 
 from src.agent.providers import get_provider
+from src.agent.retrieval import Retriever
 from src.common.config import settings
 from src.common.logging import get_logger
 from src.common.metrics import (
@@ -13,8 +18,6 @@ from src.common.metrics import (
     RETRIEVAL_LATENCY,
 )
 from src.common.models import Citation, QueryResponse, ScoredChunk
-from src.indexing.embeddings import embed_query
-from src.indexing.qdrant_store import VectorStore
 
 log = get_logger("rag")
 
@@ -27,8 +30,8 @@ REFUSAL = "I do not have enough grounding in the indexed documents to answer tha
 
 
 class RagPipeline:
-    def __init__(self, store: VectorStore | None = None):
-        self.store = store or VectorStore()
+    def __init__(self, retriever: Retriever | None = None):
+        self.retriever = retriever or Retriever()
         self.provider = get_provider()
 
     def _build_prompt(self, query: str, chunks: list[ScoredChunk]) -> str:
@@ -41,17 +44,17 @@ class RagPipeline:
         k = k or settings.top_k
 
         t0 = time.perf_counter()
-        chunks = self.store.search(embed_query(query), k)
+        result = self.retriever.retrieve(query, k)
         RETRIEVAL_LATENCY.observe(time.perf_counter() - t0)
 
-        # guardrail: refuse rather than hallucinate when retrieval is weak
-        if not chunks or chunks[0].score < settings.min_score:
+        # guardrail: grounding is judged by the strongest dense match, not by the
+        # (fusion/rerank) ranking score - refuse rather than hallucinate.
+        if not result.chunks or result.confidence is None or result.confidence < settings.min_score:
             QUERIES.labels(grounded="false").inc()
-            log.info("guardrail_refused", query=query,
-                     top_score=chunks[0].score if chunks else None)
+            log.info("guardrail_refused", query=query, confidence=result.confidence)
             return QueryResponse(answer=REFUSAL, citations=[], grounded=False)
 
-        prompt = self._build_prompt(query, chunks)
+        prompt = self._build_prompt(query, result.chunks)
         t1 = time.perf_counter()
         completion = self.provider.generate(SYSTEM, prompt)
         GENERATION_LATENCY.observe(time.perf_counter() - t1)
@@ -61,6 +64,6 @@ class RagPipeline:
         citations = [
             Citation(doc_id=c.doc_id, section=c.section,
                      source_uri=c.source_uri, score=c.score)
-            for c in chunks
+            for c in result.chunks
         ]
         return QueryResponse(answer=completion.text, citations=citations, grounded=True)

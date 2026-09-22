@@ -48,6 +48,30 @@ Ray/Spark behind a work queue, swap the JSON revision-state file for a table or 
 manifest) touches only `pipeline.py` and `state.py` - see the seams noted there. Building the
 heavy version for 195 pages would be over-engineering.
 
+## Retrieval (hybrid search)
+
+Retrieval is configurable via `RETRIEVAL_MODE`:
+
+- `dense` - vector search only: the query is embedded (`bge-small-en-v1.5`) and matched by
+  cosine similarity in Qdrant. Simple, strong on natural-language questions, weak on exact
+  tokens (IDs, rare proper nouns, acronyms).
+- `hybrid` (default) - runs a dense arm and a **BM25 sparse** arm (fastembed `Qdrant/bm25`,
+  with Qdrant applying the IDF modifier), then fuses them **server-side with Reciprocal
+  Rank Fusion** via Qdrant's Query API. This restores lexical precision the dense arm lacks.
+
+An optional **cross-encoder reranker** (`RERANK_ENABLED=true`, `bge-reranker-base`) sits on
+top of either mode: retrieve a wider candidate set (`RERANK_TOP_N`), then re-score each
+(query, chunk) pair jointly and keep the top `k`. Higher precision at a latency cost.
+
+The **guardrail is mode-independent**: grounding is judged by the top-1 dense cosine
+similarity (`MIN_SCORE`), computed separately from the fusion/rerank ranking, so the
+threshold means the same thing whether or not hybrid and rerank are on. Retrieval strategy
+lives in `src/agent/retrieval.py`; the store's dense/hybrid queries in
+`src/indexing/qdrant_store.py`.
+
+> Switching modes changes what gets indexed: hybrid stores a sparse vector per chunk, so
+> re-run ingestion (`python -m src.ingestion --full`) after turning hybrid on.
+
 ## Quickstart (local)
 
 ```bash
@@ -80,35 +104,6 @@ Helm runs ingestion as a post-install/upgrade `Job` and schedules incremental re
 The MCP `ingest` tool is the ad-hoc path (drop in a single doc); the pipeline above is the
 bulk, repeatable path.
 
-### Register with an MCP host
-
-Point the server's venv interpreter directly at the module - no wrapper script needed.
-
-```bash
-# Claude Code (this repo's .mcp.json, shared with anyone who clones it)
-claude mcp add mcp-rag-platform --scope project -- \
-  /path/to/mcp-rag-platform/venv/bin/python -m src.mcp_server.server
-```
-
-For Claude Desktop, add the equivalent entry to `claude_desktop_config.json`'s
-`mcpServers` (find it via Settings → Developer):
-
-```json
-{
-  "mcpServers": {
-    "mcp-rag-platform": {
-      "command": "/path/to/mcp-rag-platform/venv/bin/python",
-      "args": ["-m", "src.mcp_server.server"],
-      "cwd": "/path/to/mcp-rag-platform"
-    }
-  }
-}
-```
-
-`cwd` matters: config is loaded from a relative `.env`, so the process needs the repo root
-as its working directory regardless of where the host launches it from. Qdrant must already
-be running (`make up`) before the host connects, since `ingest`/`retrieve` hit it directly.
-
 ## Observability
 
 `GET /metrics` exposes Prometheus counters/histograms (request count, retrieval latency,
@@ -125,7 +120,7 @@ remain the zero-GPU default.
 ## Layout
 
 ```
-src/agent         FastAPI app, RAG pipeline, pluggable LLM providers
+src/agent        FastAPI app, RAG pipeline, pluggable LLM providers
 src/mcp_server    MCP tools (retrieve, fetch_source, ingest)
 src/ingestion     source connectors, async fetch, incremental pipeline, CLI
 src/indexing      chunking, local embeddings, qdrant store

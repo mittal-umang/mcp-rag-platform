@@ -10,6 +10,8 @@ agent:
     LLM_PROVIDER: anthropic
     LLM_MODEL: claude-3-5-sonnet-latest
     QDRANT_URL: http://qdrant:6333
+    RETRIEVAL_MODE: hybrid
+    RERANK_ENABLED: "false"
     MIN_SCORE: "0.30"
   resources:
     requests: { cpu: "250m", memory: "512Mi" }

@@ -18,3 +18,8 @@ qdrant_storage/
 
 # os
 .DS_Store
+
+# editor / tooling
+.claude/
+.vscode/
+.mcp.json

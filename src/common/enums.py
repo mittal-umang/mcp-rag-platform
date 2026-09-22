@@ -27,3 +27,15 @@ class SourceName(StrEnum):
     """
 
     WIKIPEDIA = "wikipedia"
+
+
+class RetrievalMode(StrEnum):
+    """How the retriever fetches candidates.
+
+    DENSE  - vector (cosine) search only.
+    HYBRID - dense + BM25 sparse, fused server-side by Qdrant (Reciprocal Rank Fusion).
+    An optional cross-encoder rerank stage sits on top of either mode (see config).
+    """
+
+    DENSE = "dense"
+    HYBRID = "hybrid"

@@ -1,7 +1,9 @@
-"""Corpus loader + indexer.
+"""Local-file corpus loader (dev path).
 
-Reads a YAML manifest of sources (local paths or URLs), chunks each document,
-embeds the chunks locally, and upserts them into Qdrant. Run via `make index`.
+Reads a YAML manifest of sources (local paths or URLs), chunks each document, and writes
+it into the vector store via the shared writer. Run via `make index`. The primary corpus
+path is the source-based ingestion pipeline (``python -m src.ingestion``); this stays as a
+zero-network way to index local files.
 """
 from __future__ import annotations
 
@@ -14,8 +16,9 @@ import yaml
 
 from src.common.logging import configure_logging, get_logger
 from src.indexing.chunking import chunk
-from src.indexing.embeddings import embed_texts, embedding_dim
+from src.indexing.embeddings import embedding_dim
 from src.indexing.qdrant_store import VectorStore
+from src.indexing.writer import upsert_document
 
 log = get_logger("indexer")
 
@@ -32,15 +35,7 @@ def _read(source_uri: str) -> str:
 
 def index_source(store: VectorStore, source_uri: str) -> int:
     doc_id = _doc_id(source_uri)
-    text = _read(source_uri)
-    chunks = chunk(text)
-    vectors = embed_texts([c.text for c in chunks])
-    payloads = [
-        {"section": c.section, "text": c.text, "source_uri": source_uri}
-        for c in chunks
-    ]
-    store.delete_doc(doc_id)  # idempotent re-index
-    n = store.upsert(doc_id, vectors, payloads)
+    n = upsert_document(store, doc_id, chunk(_read(source_uri)), source_uri)
     log.info("indexed", doc_id=doc_id, source=source_uri, chunks=n)
     return n
 
