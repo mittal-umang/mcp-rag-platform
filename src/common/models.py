@@ -16,7 +16,10 @@ class Chunk(BaseModel):
 
 
 class ScoredChunk(Chunk):
-    score: float = Field(ge=0.0, le=1.0)
+    # score is the ranking score for the active retrieval mode: dense cosine, an RRF
+    # fusion score, or a cross-encoder relevance score. Not a bounded probability, so
+    # it carries no [0, 1] constraint - callers compare within a single result set.
+    score: float
 
 
 class Citation(BaseModel):
